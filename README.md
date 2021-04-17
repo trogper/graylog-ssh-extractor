@@ -42,6 +42,19 @@ SSH_CONNECTION
 (Received disconnect|Connection closed|Disconnected)
 ```
 
+## Pipeline rule
+```
+rule "extract_ssh_fields"
+when
+    $message.filebeat_log_file_path == "/var/log/auth.log"
+then
+    let msg = to_string($message.message);
+    let msg2 = regex_replace("Invalid user", msg, "Invalid user by invalid user");
+    let parsed = grok(pattern: "%{SSH}", value: msg2, only_named_captures: true);
+    set_fields(parsed);
+end
+```
+
 ## Resulting fields
 ```
 ssh_message: Accepted password | Accepted publickey | Failed password | Failed password | Invalid user | Disconnected | Disconnected | Connection closed | Received disconnect
